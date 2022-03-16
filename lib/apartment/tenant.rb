@@ -15,7 +15,6 @@ module Apartment
     #   Initialize Apartment config options such as excluded_models
     #
     def init
-      adapter.setup_connection_specification_name
       adapter.process_excluded_models
     end
 
@@ -37,7 +36,6 @@ module Apartment
         end
 
         adapter_class.new.tap do |adapter|
-          adapter.setup_connection_specification_name
           adapter.process_excluded_models
         end
       end

@@ -121,27 +121,10 @@ module Apartment
       end
 
       def process_excluded_models
-        excluded_config = config_for(Apartment.default_tenant).merge(name: :_apartment_excluded)
-        Apartment.connection_handler.establish_connection(excluded_config)
-
+        config = config_for(Apartment.default_tenant)
+        # All other models will shared a connection (at Apartment.connection_class) and we can modify at will
         Apartment.excluded_models.each do |excluded_model|
-          # user mustn't have overridden `connection_specification_name`
-          # cattr_accessor in model
-          excluded_model.constantize.connection_specification_name = :_apartment_excluded
-        end
-      end
-
-      def setup_connection_specification_name
-        Apartment.connection_class.connection_specification_name = nil
-        Apartment.connection_class.instance_eval do
-          def connection_specification_name
-            if !defined?(@connection_specification_name) || @connection_specification_name.nil?
-              apartment_spec_name = Thread.current[:_apartment_connection_specification_name]
-              return apartment_spec_name ||
-                (self == ActiveRecord::Base ? "primary" : superclass.connection_specification_name)
-            end
-            @connection_specification_name
-          end
+          excluded_model.constantize.establish_connection config
         end
       end
 
